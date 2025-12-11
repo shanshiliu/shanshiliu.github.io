@@ -3,145 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>红包抽奖应用 (UI还原+新红包样式)</title>
+  <title>红包抽奖应用 (Unicode 图标替代)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script> 
-  
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
   <style>
-    /* 滚动条样式 */
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-
-    /* ---------------- 动画定义 ---------------- */
-    
-    /* 1. 默认漂浮 (Waterfall) - 修复位置突变问题，让移动更平滑 */
-    @keyframes waterfall {
-        0% { transform: translateY(0) rotate(0deg); }
-        50% { transform: translateY(8px) rotate(1deg); }
-        100% { transform: translateY(0) rotate(0deg); }
+    /* 样式优化：隐藏 Tailwind 中用于显示已中奖列表的滚动条 */
+    .max-h-16::-webkit-scrollbar {
+        width: 4px;
     }
-    .animate-waterfall {
-        animation: waterfall 4s ease-in-out infinite;
+    .max-h-16::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 2px;
     }
-
-    /* 2. 抽奖洗牌 (Shuffle) */
-    .perspective-wrapper { perspective: 800px; transform-style: preserve-3d; }
-    
-    @keyframes shuffle {
-        0% { transform: translate3d(0, 0, 0) rotate(0deg); }
-        25% { transform: translate3d(20px, -20px, 40px) rotate(15deg); } 
-        50% { transform: translate3d(-15px, 20px, -20px) rotate(-10deg); }
-        75% { transform: translate3d(15px, -10px, 20px) rotate(5deg); }
-        100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-    }
-    .animate-shuffle { animation: shuffle 0.8s linear infinite; }
-
-    /* 3. 中奖脉冲 */
-    @keyframes pulse-gold {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); transform: scale(1); }
-        50% { box-shadow: 0 0 20px 10px rgba(255, 215, 0, 0); transform: scale(1.05); }
-    }
-    .animate-pulse-fast { animation: pulse-gold 1s infinite; }
-
-    .red-packet-inner {
-        transform-style: preserve-3d;
-        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    /* ---------------- 红包 UI 核心样式 (保留新版) ---------------- */
-
-    .red-packet-base {
-        width: 90px;
-        height: 115px;
-        border-radius: 8px;
-        /* 深红渐变 */
-        background: linear-gradient(160deg, #d32f2f 0%, #b71c1c 100%);
-        /* 外部阴影 */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1);
-        position: relative;
-        overflow: hidden; 
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* 圆润立体封口 */
-    .red-packet-seal {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 45px; 
-        z-index: 20;
-        border-radius: 0 0 50% 50%;
-        background: linear-gradient(180deg, #e53935 0%, #c62828 100%);
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
-        border-top: 1px solid rgba(255,255,255,0.1);
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
-    }
-
-    .red-packet-seal::before {
-        content: '';
-        position: absolute;
-        bottom: 6px;
-        width: 70%;
-        height: 1px;
-        background: rgba(255, 215, 0, 0.3);
-    }
-
-    /* 金币图标 (封口处) */
-    .prize-coin {
-        width: 24px;
-        height: 24px;
-        background: linear-gradient(135deg, #ffd700 0%, #fdb931 50%, #d4af37 100%);
-        border-radius: 50%;
-        border: 2px solid #fff5c3; 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: serif;
-        font-weight: bold;
-        font-size: 14px;
-        color: #b71c1c;
-        transform: translateY(50%); 
-        margin-bottom: 2px; 
-        z-index: 25;
-    }
-
-    /* 主体纹理 */
-    .red-packet-body-deco {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60%;
-        height: 40px;
-        opacity: 0.1;
-        background-image: radial-gradient(circle, #ffd700 1px, transparent 1px);
-        background-size: 8px 8px;
-    }
-
-    /* 选中/中奖状态 */
-    .red-packet-base.is-selected {
-        background: linear-gradient(135deg, #ffd700 0%, #ffca28 100%) !important;
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
-        border: 2px solid #fff;
-    }
-    .red-packet-base.is-selected .red-packet-seal {
-        background: linear-gradient(180deg, #ffca28 0%, #ffb300 100%) !important;
-    }
-    .red-packet-base.is-selected .prize-coin {
-        background: #d32f2f;
-        color: #ffd700;
-        border-color: #ffcdd2;
+    .max-h-16::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
@@ -149,34 +28,43 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useCallback, useMemo } = React;
+    const { useState, useEffect } = React;
 
-    // --- SVG 图标定义 ---
-    const Icon = ({ children, size = 24, className = '', ...props }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
-    );
-    const Settings = (props) => <Icon {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.46a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.22a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 0-1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.46a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.22a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 0 1-1.73v-.18a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></Icon>;
-    const RotateCcw = (props) => <Icon {...props}><path d="M3 12a9 9 0 1 0 9-9 7.37 7.37 0 0 0-2.9 2.5L2 9"/><path d="M3 2v7h7"/></Icon>;
-    const Gift = (props) => <Icon {...props}><polyline points="20 12 12 12 12 21"/><path d="M19 12h2a2 2 0 0 0-2-2H8.38"/><path d="M10.13 5.378A2 2 0 0 0 8.38 5H3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9.378A2 2 0 0 0 19 8h-6"/><line x1="12" x2="12" y1="12" y2="2"/></Icon>;
-    const Play = (props) => <Icon {...props}><polygon points="5 3 19 12 5 21 5 3"/></Icon>;
-    const X = (props) => <Icon {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
-
-    // --- Mock Storage ---
+    // --- 模拟 window.storage 接口 ---
+    // 为了使应用能在浏览器中独立运行，我们使用 localStorage 模拟 window.storage 接口。
     const mockStorage = (function() {
       let store = {};
-      const STORAGE_KEY = 'mock_lottery_store'; 
-      try { store = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) {}
-      const save = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch (e) {} };
+      try {
+        store = JSON.parse(localStorage.getItem('mock_lottery_store')) || {};
+      } catch (e) {
+        console.error("Local storage access failed:", e);
+      }
+
+      const save = () => {
+        try {
+          localStorage.setItem('mock_lottery_store', JSON.stringify(store));
+        } catch (e) {
+          console.error("Local storage save failed:", e);
+        }
+      };
+
       return {
         get: async (key) => ({ value: store[key] }),
-        set: async (key, value) => { store[key] = value; save(); },
-        delete: async (key) => { delete store[key]; save(); },
-        clearAll: async () => { store = {}; try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+        set: async (key, value) => {
+          store[key] = value;
+          save();
+        },
+        delete: async (key) => {
+          delete store[key];
+          save();
+        }
       };
     })();
+
     window.storage = mockStorage;
 
-    // --- Main App ---
+    // --- LuckyDrawApp 组件代码 (已替换 Unicode 图标) ---
+
     const LuckyDrawApp = () => {
         const [currentPage, setCurrentPage] = useState('loading');
         const [config, setConfig] = useState(null);
@@ -187,22 +75,9 @@
         const [animating, setAnimating] = useState(false);
         const [showResetModal, setShowResetModal] = useState(false);
         const [showReconfigModal, setShowReconfigModal] = useState(false);
-        const [showNextRoundConfirm, setShowNextRoundConfirm] = useState(false);
-        const [selectedPacketId, setSelectedPacketId] = useState(null);
         const [wonPrizes, setWonPrizes] = useState([]);
 
-        const allOpened = openedPackets.size === config?.totalPackets;
-        const unopenedPacketsCount = config ? config.totalPackets - openedPackets.size : 0;
-        const isLastRound = config && currentRound === config.totalRounds;
-        const openedCount = openedPackets.size;
-
-        const generateFinalPosition = () => ({
-            finalX: Math.floor(Math.random() * 60) - 30,
-            finalY: Math.floor(Math.random() * 60) - 30,
-            finalRotation: Math.floor(Math.random() * 60) - 30,
-        });
-
-        // 加载配置
+        // 初始化：检查是否有配置
         useEffect(() => {
             const loadConfig = async () => {
                 try {
@@ -210,156 +85,227 @@
                     if (result && result.value) {
                         const savedConfig = JSON.parse(result.value);
                         setConfig(savedConfig);
-                        const round = await window.storage.get('current_round');
-                        const opened = await window.storage.get('opened_packets');
-                        const won = await window.storage.get('won_prizes');
-                        if (round?.value) setCurrentRound(parseInt(round.value));
-                        if (opened?.value) setOpenedPackets(new Set(JSON.parse(opened.value)));
-                        if (won?.value) setWonPrizes(JSON.parse(won.value));
+                        
+                        // 加载当前轮次和已开红包
+                        const roundResult = await window.storage.get('current_round');
+                        const openedResult = await window.storage.get('opened_packets');
+                        const wonResult = await window.storage.get('won_prizes');
+                        
+                        if (roundResult && roundResult.value) {
+                            setCurrentRound(parseInt(roundResult.value));
+                        }
+                        
+                        if (openedResult && openedResult.value) {
+                            setOpenedPackets(new Set(JSON.parse(openedResult.value)));
+                        }
+                        
+                        if (wonResult && wonResult.value) {
+                            setWonPrizes(JSON.parse(wonResult.value));
+                        }
+                        
                         setCurrentPage('draw');
                     } else {
                         setCurrentPage('setup');
                     }
-                } catch { setCurrentPage('setup'); }
+                } catch (error) {
+                    setCurrentPage('setup');
+                }
             };
+            
             loadConfig();
         }, []);
 
-        // 生成红包
-        const generateRedPackets = useCallback(() => {
+        // 生成红包数据
+        useEffect(() => {
+            if (config && currentPage === 'draw') {
+                generateRedPackets();
+            }
+        }, [config, currentRound, currentPage]);
+
+        const generateRedPackets = () => {
             if (!config) return;
-            const prizePool = [];
-            config.prizes.forEach(p => { for(let i=0; i<p.count; i++) prizePool.push({name: p.name, color: p.color}); });
-            for(let i=0; i<config.totalPackets - prizePool.length; i++) prizePool.push(null);
             
-            for(let i=prizePool.length-1; i>0; i--) {
-                const j = Math.floor(Math.random() * (i+1));
+            const packets = [];
+            const prizePool = [];
+            
+            // 创建奖项池
+            config.prizes.forEach(prize => {
+                for (let i = 0; i < prize.count; i++) {
+                    prizePool.push({
+                        name: prize.name,
+                        color: prize.color
+                    });
+                }
+            });
+            
+            // 添加未中奖红包
+            const emptyCount = config.totalPackets - prizePool.length;
+            for (let i = 0; i < emptyCount; i++) {
+                prizePool.push(null);
+            }
+            
+            // 洗牌算法 - Fisher-Yates
+            for (let i = prizePool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
                 [prizePool[i], prizePool[j]] = [prizePool[j], prizePool[i]];
             }
-            setRedPackets(prizePool.map((p, i) => ({ id: i, prize: p, ...generateFinalPosition() })));
-        }, [config]);
-
-        useEffect(() => { if (config && currentPage === 'draw') generateRedPackets(); }, [config, currentRound, currentPage]);
-
-        // 动画期间随机交换位置
-        useEffect(() => {
-            let intervalId;
-            if (animating) {
-                intervalId = setInterval(() => {
-                    setRedPackets(prev => {
-                        const visible = prev.filter(p => !openedPackets.has(p.id));
-                        const opened = prev.filter(p => openedPackets.has(p.id));
-                        if (visible.length <= 1) return prev;
-                        const shuffled = [...visible];
-                        for(let i=shuffled.length-1; i>0; i--) {
-                            const j = Math.floor(Math.random() * (i+1));
-                            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                        }
-                        return [...shuffled, ...opened];
-                    });
-                }, 200);
-            }
-            return () => clearInterval(intervalId);
-        }, [animating, openedPackets]);
-
-        // --- 核心功能函数 ---
-
-        const handleSetupSubmit = async (data) => {
-            await window.storage.set('lottery_config', JSON.stringify(data));
-            await window.storage.set('current_round', '1');
-            await window.storage.set('opened_packets', JSON.stringify([]));
-            await window.storage.set('won_prizes', JSON.stringify([]));
-            setConfig(data); setCurrentRound(1); setOpenedPackets(new Set()); setWonPrizes([]); setCurrentPage('draw'); setShowReconfigModal(false);
+            
+            // 生成红包网格位置 - 完全无重叠的网格布局
+            const cols = Math.ceil(Math.sqrt(config.totalPackets * 1.2));
+            const rows = Math.ceil(config.totalPackets / cols);
+            
+            prizePool.forEach((prize, index) => {
+                const row = Math.floor(index / cols);
+                const col = index % cols;
+                
+                packets.push({
+                    id: index,
+                    prize: prize,
+                    row: row,
+                    col: col
+                });
+            });
+            
+            setRedPackets(packets);
         };
 
-        const handlePacketOpen = async (packet) => {
-            const newOpened = new Set(openedPackets); newOpened.add(packet.id); setOpenedPackets(newOpened);
-            const prize = packet.prize || false;
-            if (prize) setWonPrizes(prev => [...prev, prize]);
-            await window.storage.set('opened_packets', JSON.stringify([...newOpened]));
-            if (prize) {
-                const w = await window.storage.get('won_prizes');
-                const cw = w?.value ? JSON.parse(w.value) : [];
-                await window.storage.set('won_prizes', JSON.stringify([...cw, prize]));
+        const handleSetupSubmit = async (setupData) => {
+            try {
+                await window.storage.set('lottery_config', JSON.stringify(setupData));
+                await window.storage.set('current_round', '1');
+                await window.storage.set('opened_packets', JSON.stringify([]));
+                await window.storage.set('won_prizes', JSON.stringify([]));
+                
+                setConfig(setupData);
+                setCurrentRound(1);
+                setOpenedPackets(new Set());
+                setWonPrizes([]);
+                setCurrentPage('draw');
+                setShowReconfigModal(false);
+            } catch (error) {
+                alert('保存配置失败，请重试');
             }
-            setShowResult(prize); setAnimating(false);
         };
 
-        const startDraw = () => {
-            if (animating || unopenedPacketsCount === 0) return;
-            setShowResult(null); setSelectedPacketId(null); setAnimating(true);
-            const unopened = redPackets.filter(p => !openedPackets.has(p.id));
-            if (unopened.length === 0) { setAnimating(false); return; }
+        const handlePacketClick = async (packet) => {
+            if (openedPackets.has(packet.id) || animating) return;
             
-            const winner = unopened[Math.floor(Math.random() * unopened.length)];
-            const startTime = Date.now();
-            const duration = 2500;
+            setAnimating(true);
+            const newOpened = new Set(openedPackets);
+            newOpened.add(packet.id);
+            setOpenedPackets(newOpened);
             
-            const step = () => {
-                if (Date.now() - startTime < duration) {
-                    const random = unopened[Math.floor(Math.random() * unopened.length)];
-                    setSelectedPacketId(random.id);
-                    const elapsed = Date.now() - startTime;
-                    const remaining = duration - elapsed;
-                    setTimeout(step, 80 + (200 * (1 - remaining/duration)));
-                } else {
-                    setSelectedPacketId(winner.id);
-                    setTimeout(() => handlePacketOpen(winner), 1200);
+            // 如果中奖，添加到中奖列表
+            if (packet.prize) {
+                setWonPrizes(prev => [...prev, packet.prize]);
+            }
+            
+            try {
+                await window.storage.set('opened_packets', JSON.stringify([...newOpened]));
+                if (packet.prize) {
+                    const wonResult = await window.storage.get('won_prizes');
+                    const currentWon = wonResult && wonResult.value ? JSON.parse(wonResult.value) : [];
+                    await window.storage.set('won_prizes', JSON.stringify([...currentWon, packet.prize]));
                 }
-            };
-            step();
+            } catch (error) {
+                console.error('保存失败');
+            }
+            
+            setTimeout(() => {
+                setShowResult(packet.prize);
+                setAnimating(false);
+            }, 300);
         };
 
         const handleNextRound = async () => {
             if (currentRound >= config.totalRounds) return;
-            const next = currentRound + 1;
-            setCurrentRound(next); setOpenedPackets(new Set()); setWonPrizes([]); setShowResult(null); setShowNextRoundConfirm(false);
-            await window.storage.set('current_round', next.toString());
-            await window.storage.set('opened_packets', JSON.stringify([]));
-            await window.storage.set('won_prizes', JSON.stringify([]));
-        };
-
-        const confirmNextRound = () => {
-            if (unopenedPacketsCount > 0) setShowNextRoundConfirm(true);
-            else handleNextRound();
+            
+            const nextRound = currentRound + 1;
+            setCurrentRound(nextRound);
+            setOpenedPackets(new Set());
+            setWonPrizes([]);
+            setShowResult(null);
+            
+            try {
+                await window.storage.set('current_round', nextRound.toString());
+                await window.storage.set('opened_packets', JSON.stringify([]));
+                await window.storage.set('won_prizes', JSON.stringify([]));
+            } catch (error) {
+                console.error('保存失败:', error);
+                alert('保存失败，请重试');
+            }
         };
 
         const confirmReset = async () => {
-            await window.storage.set('opened_packets', JSON.stringify([]));
-            await window.storage.set('won_prizes', JSON.stringify([]));
-            setOpenedPackets(new Set()); setWonPrizes([]); setShowResult(null); setSelectedPacketId(null); setShowResetModal(false); generateRedPackets();
+            try {
+                await window.storage.set('opened_packets', JSON.stringify([]));
+                await window.storage.set('won_prizes', JSON.stringify([]));
+                setOpenedPackets(new Set());
+                setWonPrizes([]);
+                setShowResult(null);
+                setShowResetModal(false);
+                generateRedPackets();
+            } catch (error) {
+                console.error('重置失败:', error);
+                alert('重置失败，请重试');
+            }
         };
 
         const confirmReconfig = async () => {
-            await window.storage.clearAll();
-            setConfig(null); setCurrentRound(1); setOpenedPackets(new Set()); setWonPrizes([]); setShowResult(null); setSelectedPacketId(null); setRedPackets([]); setShowReconfigModal(false); setCurrentPage('setup');
+            try {
+                await window.storage.delete('lottery_config');
+                await window.storage.delete('current_round');
+                await window.storage.delete('opened_packets');
+                await window.storage.delete('won_prizes');
+                
+                setConfig(null);
+                setCurrentRound(1);
+                setOpenedPackets(new Set());
+                setWonPrizes([]);
+                setShowResult(null);
+                setRedPackets([]);
+                setShowReconfigModal(false);
+                setCurrentPage('setup');
+            } catch (error) {
+                console.error('清空数据失败:', error);
+                alert('清空数据失败，请重试');
+            }
         };
-
+        
         const handleReconfigEdit = async () => {
-            setShowReconfigModal(false);
-            setCurrentPage('setup');
+            try {
+                // 保持当前配置，只是进入编辑模式
+                setShowReconfigModal(false);
+                setCurrentPage('setup');
+            } catch (error) {
+                console.error('进入编辑失败:', error);
+            }
         };
 
-        const closeResultModal = () => { setShowResult(null); setSelectedPacketId(null); };
+        if (currentPage === 'loading') {
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 flex items-center justify-center">
+                    <div className="text-white text-2xl">加载中...</div>
+                </div>
+            );
+        }
 
-        if (currentPage === 'loading') return <div className="min-h-screen bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 flex items-center justify-center text-white text-2xl">加载中...</div>;
-        if (currentPage === 'setup') return <SetupPage onSubmit={handleSetupSubmit} initialConfig={config} />;
+        if (currentPage === 'setup') {
+            return <SetupPage onSubmit={handleSetupSubmit} initialConfig={config} />;
+        }
 
-        // --- 恢复原始网格布局逻辑 ---
-        // 使用动态计算的列数，使红包群居中且整齐，解决全屏铺满可能导致的滚动条问题
-        const gridCols = Math.ceil(Math.sqrt(config.totalPackets * 1.2));
-        const gridMaxWidth = `${gridCols * 100}px`; // 100px = 红包宽90px + 间隙
+        const allOpened = openedPackets.size === config.totalPackets;
+        const openedCount = openedPackets.size;
 
         return (
-            <div className="min-h-screen bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 relative overflow-hidden flex flex-col">
-                
-                {/* 装饰性元素 (原版) */}
+            <div className="min-h-screen bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 relative overflow-hidden">
+                {/* 装饰性元素 */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-300 rounded-full opacity-20 blur-3xl"></div>
                     <div className="absolute bottom-20 right-20 w-40 h-40 bg-pink-300 rounded-full opacity-20 blur-3xl"></div>
                 </div>
 
-                {/* 顶部信息栏 (原版简洁 UI) */}
+                {/* 顶部信息栏 */}
                 <div className="relative z-10 p-6">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="text-white">
@@ -367,11 +313,23 @@
                             <p className="text-white/90">第 {currentRound} / {config.totalRounds} 轮</p>
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={() => setShowResetModal(true)} className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition flex items-center gap-2 active:scale-95">
-                                <RotateCcw size={18} /> 重置本轮
+                            <button
+                                onClick={() => setShowResetModal(true)}
+                                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition flex items-center gap-2 active:scale-95"
+                                title="重置当前轮次进度"
+                            >
+                                {/* 替换 RotateCcw */}
+                                <span className="text-xl" role="img" aria-label="reset">🔄</span>
+                                重置本轮
                             </button>
-                            <button onClick={() => setShowReconfigModal(true)} className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition flex items-center gap-2 active:scale-95">
-                                <Settings size={18} /> 重新设置
+                            <button
+                                onClick={() => setShowReconfigModal(true)}
+                                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition flex items-center gap-2 active:scale-95"
+                                title="清空所有数据并重新配置"
+                            >
+                                {/* 替换 Settings */}
+                                <span className="text-xl" role="img" aria-label="settings">⚙️</span>
+                                重新设置
                             </button>
                         </div>
                     </div>
@@ -380,129 +338,167 @@
                 {/* 统计信息 */}
                 <div className="relative z-10 px-6 mb-6">
                     <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* 抽奖进度 */}
                         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6">
                             <div className="flex justify-between items-center text-white">
                                 <div>
                                     <p className="text-sm opacity-80">已抽取</p>
                                     <p className="text-3xl font-bold">{openedCount} / {config.totalPackets}</p>
                                 </div>
-                                <div className="flex gap-2 text-center text-xs">
-                                    {config.prizes.map((p,i)=><div key={i}><div style={{backgroundColor:p.color}} className="w-2 h-2 rounded-full mx-auto mb-1"></div>{p.name}<br/>{p.count}</div>)}
+                                <div className="flex gap-4">
+                                    {config.prizes.map((prize, index) => (
+                                        <div key={index} className="text-center">
+                                            <div 
+                                                className="w-3 h-3 rounded-full mx-auto mb-1"
+                                                style={{ backgroundColor: prize.color }}
+                                            ></div>
+                                            <p className="text-xs opacity-80">{prize.name}</p>
+                                            <p className="text-sm font-semibold">{prize.count}个</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 text-white custom-scrollbar overflow-y-auto max-h-24">
-                            <p className="text-sm opacity-80 mb-2">本轮已中奖 ({wonPrizes.length})</p>
-                            <div className="flex flex-wrap gap-2">
-                                {wonPrizes.map((p, i) => <span key={i} className="px-2 py-1 bg-white/20 rounded text-xs flex items-center gap-1" style={{borderLeft:`3px solid ${p.color}`}}>{p.name}</span>)}
+
+                        {/* 已中奖信息 */}
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6">
+                            <div className="text-white">
+                                <p className="text-sm opacity-80 mb-3">本轮已中奖 ({wonPrizes.length})</p>
+                                <div className="flex flex-wrap gap-2 max-h-16 overflow-y-auto">
+                                    {wonPrizes.length === 0 ? (
+                                        <p className="text-sm opacity-60">暂无中奖</p>
+                                    ) : (
+                                        wonPrizes.map((prize, index) => (
+                                            <div
+                                                key={index}
+                                                className="px-3 py-1 rounded-full text-xs font-semibold text-white flex items-center gap-1"
+                                                style={{ backgroundColor: prize.color }}
+                                            >
+                                                {/* 替换 Gift */}
+                                                <span className="text-sm" role="img" aria-label="gift">🎁</span>
+                                                {prize.name}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 红包区域 (恢复居中网格) */}
-                <div className="relative z-10 px-6 pb-20 flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="max-w-7xl mx-auto flex justify-center">
-                        <div 
-                            className="grid gap-4 p-4"
-                            style={{
-                                gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
-                                maxWidth: gridMaxWidth
-                            }}
-                        >
-                            {redPackets.map(packet => {
-                                const isSelected = selectedPacketId === packet.id;
-                                const isOpened = openedPackets.has(packet.id);
-                                const floatDelay = `${(packet.id % 5) * 0.7}s`;
-                                
-                                const finalStyle = isSelected && !animating ? {
-                                    transform: `translate(${packet.finalX}px, ${packet.finalY}px) rotate(${packet.finalRotation}deg) scale(1.1)`,
-                                    zIndex: 50
-                                } : {};
-
-                                let baseClasses = "red-packet-base transform red-packet-inner cursor-pointer";
-                                let animStyle = { animationDelay: floatDelay };
-
-                                if (isOpened) return <div key={packet.id} className="invisible w-[90px] h-[115px]"></div>;
-
-                                if (animating) {
-                                    baseClasses += " animate-shuffle";
-                                    animStyle = { 
-                                        animationDelay: `${(packet.id % 7) * 0.05}s`,
-                                        animationDuration: `${0.8 + (packet.id % 3) * 0.1}s`
-                                    };
-                                } else if (isSelected) {
-                                    baseClasses += " is-selected animate-pulse-fast";
-                                } else {
-                                    baseClasses += " animate-waterfall hover:scale-105 hover:-translate-y-2 transition-transform duration-200";
-                                }
-
-                                return (
-                                    <div key={packet.id} className="flex justify-center items-center h-full perspective-wrapper">
-                                        <div className={baseClasses} style={{ ...animStyle, ...finalStyle }}>
-                                            <div className="red-packet-seal">
-                                                <div className="prize-coin">奖</div>
+                {/* 红包区域 - 网格布局 */}
+                <div className="relative z-10 px-6 pb-20 overflow-auto max-h-[calc(100vh-300px)]">
+                    <div className="max-w-7xl mx-auto">
+                        {redPackets.length === 0 ? (
+                            <div className="flex items-center justify-center min-h-[400px]">
+                                <div className="text-white text-xl">正在生成红包...</div>
+                            </div>
+                        ) : (
+                            <div 
+                                className="grid gap-4 mx-auto"
+                                style={{
+                                    gridTemplateColumns: `repeat(${Math.ceil(Math.sqrt(config.totalPackets * 1.2))}, minmax(0, 1fr))`,
+                                    maxWidth: `${Math.ceil(Math.sqrt(config.totalPackets * 1.2)) * 100}px`
+                                }}
+                            >
+                                {redPackets.map(packet => (
+                                    <div
+                                        key={packet.id}
+                                        onClick={() => handlePacketClick(packet)}
+                                        className={`cursor-pointer transition-all duration-300 flex items-center justify-center ${
+                                            openedPackets.has(packet.id) ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
+                                        } ${animating ? 'pointer-events-none' : ''}`}
+                                    >
+                                        <div className="relative group">
+                                            <div className="w-20 h-24 bg-gradient-to-b from-red-500 to-red-600 rounded-lg shadow-xl flex items-center justify-center transform group-hover:scale-125 transition-transform duration-200">
+                                                {/* 替换 Gift */}
+                                                <span className="text-yellow-300 text-4xl" role="img" aria-label="gift">🎁</span>
                                             </div>
-                                            <div className="red-packet-body-deco"></div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* 抽奖按钮 (居中) */}
-                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40">
-                    <button
-                        onClick={startDraw}
-                        disabled={animating || unopenedPacketsCount === 0}
-                        className={`group relative bg-gradient-to-b from-yellow-300 to-yellow-500 text-red-700 w-24 h-24 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-4 border-yellow-200 flex items-center justify-center transition-all duration-200 ${animating ? 'scale-90 opacity-80 cursor-not-allowed' : 'hover:scale-110 hover:-translate-y-1 active:scale-95'} ${unopenedPacketsCount === 0 ? 'grayscale' : ''}`}
-                    >
-                        {animating ? <RotateCcw className="animate-spin" size={32} /> : <div className="flex flex-col items-center leading-none"><span className="font-bold text-2xl">抽</span><span className="text-xs font-bold">START</span></div>}
-                        <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-30 transition-opacity"></div>
-                    </button>
-                </div>
-
-                {/* 下一轮按钮 (右下角) */}
-                {!isLastRound && (
-                    <div className="fixed bottom-8 right-8 z-40">
+                {/* 下一轮按钮 */}
+                {allOpened && currentRound < config.totalRounds && (
+                    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20">
                         <button
-                            onClick={confirmNextRound}
-                            disabled={animating}
-                            className={`
-                                w-14 h-14 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full 
-                                flex items-center justify-center shadow-lg transition transform 
-                                ${animating ? 'opacity-0' : 'hover:scale-110 active:scale-95'}
-                            `}
-                            title="下一轮"
+                            onClick={handleNextRound}
+                            className="bg-yellow-400 hover:bg-yellow-500 text-red-600 px-8 py-4 rounded-full font-bold text-lg shadow-2xl flex items-center gap-3 transition transform hover:scale-105"
                         >
-                            <Play size={24} className="ml-1"/>
+                            {/* 替换 Play */}
+                            <span className="text-2xl" role="img" aria-label="play">▶️</span>
+                            开始第 {currentRound + 1} 轮
                         </button>
                     </div>
                 )}
 
-                {/* 弹窗组件 (UI 还原) */}
-                {showNextRoundConfirm && <ConfirmModal title="跳过本轮？" message={`还有 ${unopenedPacketsCount} 个红包未开，确定进入下一轮吗？`} onConfirm={handleNextRound} onCancel={() => setShowNextRoundConfirm(false)} confirmText="确认下一轮" confirmColor="bg-red-600" />}
-                {showResetModal && <ConfirmModal title="重置本轮抽奖" message="确定要重置当前轮次吗？所有已抽取的红包将被重置，红包将重新随机排列。" onConfirm={confirmReset} onCancel={() => setShowResetModal(false)} confirmText="确认重置" confirmColor="bg-gradient-to-r from-orange-500 to-red-500" />}
-                {showReconfigModal && <ReconfigModal onEdit={handleReconfigEdit} onClearAndNew={confirmReconfig} onCancel={() => setShowReconfigModal(false)} />}
-                
+                {/* 完成提示 */}
+                {allOpened && currentRound === config.totalRounds && (
+                    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+                        <div className="bg-white/95 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl">
+                            <p className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500">
+                                🎉 所有轮次已完成！
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* 重置确认弹窗 */}
+                {showResetModal && (
+                    <ConfirmModal
+                        title="重置本轮抽奖"
+                        message="确定要重置当前轮次吗？所有已抽取的红包将被重置，红包将重新随机排列。"
+                        onConfirm={confirmReset}
+                        onCancel={() => setShowResetModal(false)}
+                        confirmText="确认重置"
+                        confirmColor="bg-gradient-to-r from-orange-500 to-red-500"
+                    />
+                )}
+
+                {/* 重新设置弹窗 */}
+                {showReconfigModal && (
+                    <ReconfigModal
+                        onEdit={handleReconfigEdit}
+                        onClearAndNew={confirmReconfig}
+                        onCancel={() => setShowReconfigModal(false)}
+                    />
+                )}
+
                 {/* 结果弹窗 */}
                 {showResult !== null && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
                         <div className="bg-white rounded-3xl p-10 text-center transform scale-100 shadow-2xl max-w-md relative">
-                            <button onClick={closeResultModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"><X size={24} /></button>
+                            <button
+                                onClick={() => setShowResult(null)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+                            >
+                                {/* 替换 X */}
+                                <span className="text-2xl" role="img" aria-label="close">❌</span>
+                            </button>
+                            
                             {showResult ? (
                                 <>
-                                    <div className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center border-4 border-white shadow-xl" style={{ backgroundColor: showResult.color }}>
-                                        <Gift size={64} className="text-white" />
+                                    <div 
+                                        className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: showResult.color }}
+                                    >
+                                        {/* 替换 Gift */}
+                                        <span className="text-7xl text-white" role="img" aria-label="prize">🎁</span>
                                     </div>
-                                    <h2 className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500">恭喜中奖！</h2>
+                                    <h2 className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500">
+                                        恭喜中奖！
+                                    </h2>
                                     <p className="text-2xl font-semibold text-gray-800">{showResult.name}</p>
                                 </>
                             ) : (
                                 <>
-                                    <div className="w-32 h-32 mx-auto mb-6 bg-gray-200 rounded-full flex items-center justify-center"><span className="text-6xl">😊</span></div>
+                                    <div className="w-32 h-32 mx-auto mb-6 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <span className="text-6xl">😊</span>
+                                    </div>
                                     <h2 className="text-3xl font-bold mb-3 text-gray-700">谢谢参与</h2>
                                     <p className="text-lg text-gray-600">继续加油！</p>
                                 </>
@@ -514,80 +510,260 @@
         );
     };
 
-    // --- 子组件 (UI 还原) ---
-    const ConfirmModal = ({ title, message, onConfirm, onCancel, confirmText, confirmColor }) => (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform scale-100">
-                <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
-                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-600"><X size={24}/></button>
-                </div>
-                <p className="text-gray-600 mb-8 leading-relaxed">{message}</p>
-                <div className="flex gap-3">
-                    <button onClick={onCancel} className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">取消</button>
-                    <button onClick={onConfirm} className={`flex-1 px-6 py-3 ${confirmColor} text-white rounded-xl font-semibold hover:shadow-lg transition`}>{confirmText}</button>
-                </div>
-            </div>
-        </div>
-    );
-
-    const ReconfigModal = ({ onEdit, onClearAndNew, onCancel }) => (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform scale-100">
-                <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-2xl font-bold text-gray-800">重新设置</h3>
-                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-600"><X size={24}/></button>
-                </div>
-                <p className="text-gray-600 mb-6">请选择重新设置的方式：</p>
-                <div className="space-y-3 mb-6">
-                    <button onClick={onEdit} className="w-full p-4 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-xl text-left transition group"><div className="flex items-center justify-between"><div><h4 className="font-semibold text-gray-800 mb-1">编辑当前配置</h4><p className="text-sm text-gray-600">保留当前设置，进入编辑模式修改</p></div><Settings className="text-blue-500 group-hover:rotate-90 transition-transform" size={24} /></div></button>
-                    <button onClick={onClearAndNew} className="w-full p-4 bg-red-50 hover:bg-red-100 border-2 border-red-200 rounded-xl text-left transition group"><div className="flex items-center justify-between"><div><h4 className="font-semibold text-gray-800 mb-1">清空并新建</h4><p className="text-sm text-gray-600">清除所有数据，从头开始配置</p></div><RotateCcw className="text-red-500 group-hover:rotate-180 transition-transform" size={24} /></div></button>
-                </div>
-                <button onClick={onCancel} className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">取消</button>
-            </div>
-        </div>
-    );
-
-    // SetupPage 保持原样 (此处简化显示，确保已包含)
-    const SetupPage = ({ onSubmit, initialConfig }) => {
-        const [totalPackets, setTotalPackets] = useState(initialConfig?.totalPackets || 50);
-        const [totalRounds, setTotalRounds] = useState(initialConfig?.totalRounds || 3);
-        const [prizes, setPrizes] = useState(initialConfig?.prizes || [{ name: '一等奖', count: 1, color: '#FFD700' }]);
-        const addPrize = () => setPrizes([...prizes, { name: `奖项${prizes.length + 1}`, count: 1, color: '#FFD700' }]);
-        const removePrize = (i) => setPrizes(prizes.filter((_, idx) => idx !== i));
-        const updatePrize = (i, f, v) => { const n = [...prizes]; n[i][f] = v; setPrizes(n); };
-        const handleSubmit = () => onSubmit({ totalPackets: parseInt(totalPackets), totalRounds: parseInt(totalRounds), prizes: prizes.map(p => ({ ...p, count: parseInt(p.count) })) });
-
+    // 确认对话框组件
+    const ConfirmModal = ({ title, message, onConfirm, onCancel, confirmText, confirmColor }) => {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 flex items-center justify-center p-6">
-                <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8">
-                    <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500 mb-6 text-center">🧧 红包抽奖设置</h1>
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <label className="block text-sm font-semibold text-gray-700">红包总数 <input type="number" value={totalPackets} onChange={e=>setTotalPackets(e.target.value)} className="w-full border-2 border-gray-200 rounded-xl p-3 mt-1"/></label>
-                            <label className="block text-sm font-semibold text-gray-700">轮数 <input type="number" value={totalRounds} onChange={e=>setTotalRounds(e.target.value)} className="w-full border-2 border-gray-200 rounded-xl p-3 mt-1"/></label>
-                        </div>
-                        <div>
-                            <div className="flex justify-between mb-2"><span className="font-semibold text-gray-700">奖项设置</span><button onClick={addPrize} className="text-sm bg-pink-500 text-white px-3 py-1 rounded">添加</button></div>
-                            <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                                {prizes.map((p, i) => (
-                                    <div key={i} className="flex gap-2 items-center bg-gray-50 p-2 rounded-lg">
-                                        <input type="color" value={p.color} onChange={e=>updatePrize(i,'color',e.target.value)} className="w-8 h-8 rounded"/>
-                                        <input value={p.name} onChange={e=>updatePrize(i,'name',e.target.value)} className="border p-1 rounded flex-1" placeholder="名称"/>
-                                        <input type="number" value={p.count} onChange={e=>updatePrize(i,'count',e.target.value)} className="border p-1 rounded w-16" placeholder="数量"/>
-                                        {prizes.length>1 && <button onClick={()=>removePrize(i)} className="text-red-500"><X size={16}/></button>}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <button onClick={handleSubmit} className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition">开始抽奖</button>
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform scale-100">
+                    <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
+                        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+                            {/* 替换 X */}
+                            <span className="text-2xl" role="img" aria-label="close">❌</span>
+                        </button>
+                    </div>
+                    <p className="text-gray-600 mb-8 leading-relaxed">{message}</p>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onCancel}
+                            className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition"
+                        >
+                            取消
+                        </button>
+                        <button
+                            onClick={onConfirm}
+                            className={`flex-1 px-6 py-3 ${confirmColor} text-white rounded-xl font-semibold hover:shadow-lg transition`}
+                        >
+                            {confirmText}
+                        </button>
                     </div>
                 </div>
             </div>
         );
     };
 
+    // 重新设置选项弹窗
+    const ReconfigModal = ({ onEdit, onClearAndNew, onCancel }) => {
+        return (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform scale-100">
+                    <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-2xl font-bold text-gray-800">重新设置</h3>
+                        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+                            {/* 替换 X */}
+                            <span className="text-2xl" role="img" aria-label="close">❌</span>
+                        </button>
+                    </div>
+                    <p className="text-gray-600 mb-6">请选择重新设置的方式：</p>
+                    
+                    <div className="space-y-3 mb-6">
+                        <button
+                            onClick={onEdit}
+                            className="w-full p-4 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-xl text-left transition group"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-semibold text-gray-800 mb-1">编辑当前配置</h4>
+                                    <p className="text-sm text-gray-600">保留当前设置，进入编辑模式修改</p>
+                                </div>
+                                {/* 替换 Settings */}
+                                <span className="text-blue-500 group-hover:rotate-90 transition-transform text-2xl" role="img" aria-label="settings">⚙️</span>
+                            </div>
+                        </button>
+                        
+                        <button
+                            onClick={onClearAndNew}
+                            className="w-full p-4 bg-red-50 hover:bg-red-100 border-2 border-red-200 rounded-xl text-left transition group"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-semibold text-gray-800 mb-1">清空并新建</h4>
+                                    <p className="text-sm text-gray-600">清除所有数据，从头开始配置</p>
+                                </div>
+                                {/* 替换 RotateCcw */}
+                                <span className="text-red-500 group-hover:rotate-180 transition-transform text-2xl" role="img" aria-label="reset">🔄</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <button
+                        onClick={onCancel}
+                        className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition"
+                    >
+                        取消
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    const SetupPage = ({ onSubmit, initialConfig }) => {
+        const [totalPackets, setTotalPackets] = useState(initialConfig?.totalPackets || 50);
+        const [totalRounds, setTotalRounds] = useState(initialConfig?.totalRounds || 3);
+        const [prizes, setPrizes] = useState(initialConfig?.prizes || [
+            { name: '一等奖', count: 1, color: '#FFD700' },
+            { name: '二等奖', count: 3, color: '#FF6B6B' },
+            { name: '三等奖', count: 5, color: '#4ECDC4' }
+        ]);
+
+        const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3', '#A8D8EA'];
+
+        const addPrize = () => {
+            setPrizes([...prizes, { name: `奖项${prizes.length + 1}`, count: 1, color: colors[prizes.length % colors.length] }]);
+        };
+
+        const removePrize = (index) => {
+            setPrizes(prizes.filter((_, i) => i !== index));
+        };
+
+        const updatePrize = (index, field, value) => {
+            const newPrizes = [...prizes];
+            newPrizes[index][field] = value;
+            setPrizes(newPrizes);
+        };
+
+        const handleSubmit = () => {
+            const totalPrizeCount = prizes.reduce((sum, p) => sum + parseInt(p.count || 0), 0);
+            
+            if (totalPrizeCount > totalPackets) {
+                alert('奖项总数必须小于红包总数！');
+                return;
+            }
+
+            if (prizes.some(p => !p.name.trim() || !p.count || p.count < 1)) {
+                alert('请完善所有奖项信息！');
+                return;
+            }
+
+            if (totalPackets < 10) {
+                alert('红包总数不能少于10个！');
+                return;
+            }
+
+            if (totalRounds < 1) {
+                alert('总轮数不能少于1轮！');
+                return;
+            }
+
+            onSubmit({
+                totalPackets: parseInt(totalPackets),
+                totalRounds: parseInt(totalRounds),
+                prizes: prizes.map(p => ({ 
+                    name: p.name.trim(), 
+                    count: parseInt(p.count),
+                    color: p.color
+                }))
+            });
+        };
+
+        const totalPrizeCount = prizes.reduce((sum, p) => sum + parseInt(p.count || 0), 0);
+
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 flex items-center justify-center p-6">
+                <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8">
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500 mb-2">
+                            🧧 红包抽奖设置
+                        </h1>
+                        <p className="text-gray-600">配置您的抽奖活动</p>
+                    </div>
+
+                    <div className="space-y-6">
+                        {/* 基础设置 */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">每组红包总数</label>
+                                <input
+                                    type="number"
+                                    min="10"
+                                    value={totalPackets}
+                                    onChange={(e) => setTotalPackets(parseInt(e.target.value))}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-400 focus:outline-none transition"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">总轮数</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={totalRounds}
+                                    onChange={(e) => setTotalRounds(parseInt(e.target.value))}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-400 focus:outline-none transition"
+                                />
+                            </div>
+                        </div>
+
+                        {/* 奖项设置 */}
+                        <div>
+                            <div className="flex justify-between items-center mb-3">
+                                <label className="block text-sm font-semibold text-gray-700">奖项设置</label>
+                                <button
+                                    onClick={addPrize}
+                                    className="text-sm bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition"
+                                >
+                                    + 添加奖项
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {prizes.map((prize, index) => (
+                                    <div key={index} className="flex gap-3 items-center bg-gray-50 p-4 rounded-xl">
+                                        <input
+                                            type="color"
+                                            value={prize.color}
+                                            onChange={(e) => updatePrize(index, 'color', e.target.value)}
+                                            className="w-12 h-12 rounded-lg cursor-pointer border-2 border-gray-300"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="奖项名称"
+                                            value={prize.name}
+                                            onChange={(e) => updatePrize(index, 'name', e.target.value)}
+                                            className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-red-400 focus:outline-none"
+                                        />
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            placeholder="数量"
+                                            value={prize.count}
+                                            onChange={(e) => updatePrize(index, 'count', e.target.value)}
+                                            className="w-24 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-red-400 focus:outline-none"
+                                        />
+                                        {prizes.length > 1 && (
+                                            <button
+                                                onClick={() => removePrize(index)}
+                                                className="text-red-500 hover:text-red-700 font-bold px-3 py-2"
+                                            >
+                                                删除
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-3 text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                                <p>奖项总数：{totalPrizeCount} 个 / 红包总数：{totalPackets} 个</p>
+                                <p>未中奖红包：{totalPackets - totalPrizeCount} 个</p>
+                            </div>
+                        </div>
+
+                        {/* 提交按钮 */}
+                        <button
+                            onClick={handleSubmit}
+                            className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition transform hover:scale-105"
+                        >
+                            开始抽奖
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+
+    // 渲染应用
     ReactDOM.createRoot(document.getElementById('root')).render(<LuckyDrawApp />);
+
   </script>
 </body>
 </html>
